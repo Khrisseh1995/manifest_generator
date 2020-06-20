@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "aws-sdk": "^2.700.0",
+    "body-parser": "^1.19.0",
+    "cookie-parser": "^1.4.5",
+    "express": "^4.17.1",
+    "moment": "^2.26.0",
+    "nodemon": "^2.0.4",
+    "read-last-lines": "^1.7.2",
+    "sqlite3": "^4.2.0",
+    "uuid": "^8.1.0"
+  },
+  "scripts": {
+    "start": "nodemon"
+  }
+}

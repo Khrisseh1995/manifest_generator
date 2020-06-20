@@ -1,0 +1,1 @@
+docker exec -it radio_streamer_transcoder_1 bash

@@ -1,0 +1,1 @@
+docker exec -it radio_streamer_manifest-generator_1 bash
