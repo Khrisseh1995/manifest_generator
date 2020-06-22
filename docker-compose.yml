@@ -17,9 +17,7 @@ services:
     build: './transcoder'    
     tty: true
     volumes: 
-      - './transcoder:/usr/src/app'
-    ports:
-      - 7001:80
+      - './transcoder/src:/usr/src/app/src'    
     depends_on: 
       - manifest-generator
     dns:

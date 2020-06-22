@@ -13,13 +13,12 @@ const insertIntoDatabase = (insertValues) => {
     db.run('INSERT INTO manifest_information(EXTINFO, TIME, LOCATION, FILENAME) VALUES(?, ?, ?, ?)',insertValues,(err) => {
         if (err) {
             return console.error(err.message);
-        }
-        // console.log(`Rows inserted ${insertValues[2]}`);
+        }        
     });
 }
 
 const readValuesForManifest = () => new Promise((res,rej) => {
-    const sql = "select * from (select * from manifest_information order by id DESC limit 3) order by id ASC";
+    const sql = "select * from (select * from manifest_information order by id DESC limit 10) order by id ASC";
 
     db.all(sql,[],(err,rows) => {
         res(rows);
@@ -37,7 +36,6 @@ const getLastRecords = (first, last) => new Promise((res, rej) => {
         rej(err);
     });
 });
-
 
 
 module.exports = {

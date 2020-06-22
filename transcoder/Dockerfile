@@ -15,8 +15,19 @@ COPY package.json /usr/src/app
 
 RUN npm install
 
+RUN mkdir src
+
+COPY src /usr/src/app/src
+
 COPY . /usr/src/app
 
-RUN touch test.m3u8
+RUN mkdir ../streams/
+RUN touch ../streams/test.m3u8
+
+#Probs wanna remove this for a prod build
+RUN apt-get update
+RUN apt-get -y install vim
+
+RUN npm run init_tsc
 
 # CMD ["node", "transcoder.js"]
