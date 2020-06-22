@@ -1,4 +1,4 @@
-import Transcoder from './transcoder_class';
+import Transcoder from './transcoder';
 
 const transcoder = new Transcoder("https://liveaudio.rte.ie/hls-radio/radio1/chunklist.m3u8");
 
