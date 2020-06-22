@@ -14,7 +14,7 @@
         "typescript": "^3.9.5"
     },
     "scripts": {
-        "start": "ts-node src/transcoder.ts",
+        "start": "ts-node src/index.ts",
         "init_tsc": "tsc --init"
     }
 }

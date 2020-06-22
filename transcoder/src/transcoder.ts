@@ -29,7 +29,7 @@ interface expressParam {
 }
 
 export default class Transcoder {
-    constructor(private streamUrl: string) {}
+    constructor(private streamUrl: string) { }
 
     private uploadManifestChunk(): Promise<chunkInformation> {
         const manifestArray: Array<string> = [];
@@ -64,8 +64,6 @@ export default class Transcoder {
             return;
         }
 
-        console.log("Upload to S3");
-
         s3.upload({
             Bucket: 'hboremixbucket',
             Key: `radio_output/${key}`,
@@ -77,9 +75,7 @@ export default class Transcoder {
     }
 
     private async postToManifestGenerator(manifestInformation: expressParam): Promise<void> {
-        // console.log(manifestInformation);
-        const { data } = await axios.post("http://manifest-generator/create_manifest", manifestInformation);
-        // console.log(data);
+        await axios.post("http://manifest-generator/create_manifest", manifestInformation);
     }
 
     public async startTranscode(): Promise<void> {
@@ -88,7 +84,7 @@ export default class Transcoder {
             "+genpts",
             '-re',
             '-i',
-            this.streamUrl,            
+            this.streamUrl,
             "-strict",
             "-2",
             "-c:a",
@@ -111,7 +107,6 @@ export default class Transcoder {
         ffmpeg.stderr.on('data', async data => {
             const regex = /test[0-9]+.ts/gm;
             const ffmpegOutput = data.toString();
-            // console.log(ffmpegOutput);
             const isMatch = ffmpegOutput.match(regex);
             if (isMatch) {
                 const chunk = await this.uploadManifestChunk();
@@ -123,7 +118,6 @@ export default class Transcoder {
                 }
                 await this.postToManifestGenerator(objectToSend);
             }
-            // console.log("Match ", writeNumber);
         });
     }
 }
