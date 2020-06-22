@@ -11,7 +11,7 @@ const app = express();
 app.use(cors())
 app.use(bodyParser.json());
 
-app.get('/generate_standard_manifest.m3u8', async (req, res) => {
+app.get('/generate_standard_manifest', async (req, res) => {
     res.setHeader('Content-type', 'application/x-mpegURL');
     return res.sendFile(__dirname + '/master.m3u8');
 });
