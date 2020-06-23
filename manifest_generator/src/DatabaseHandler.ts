@@ -1,10 +1,6 @@
 import sqlite3, { Database } from 'sqlite3';
 import ManifestInformation from './types/ManifestInformation';
 
-/**
- * The Singleton class defines the `getInstance` method that lets clients access
- * the unique singleton instance.
- */
 export default class DatabaseHandler {
     private static instance: DatabaseHandler;
     private connection: Database;

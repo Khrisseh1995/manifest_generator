@@ -19,7 +19,8 @@ COPY src /usr/src/app/src
 RUN yum install sqlite
 RUN mkdir ../db/
 RUN sqlite3 ../db/manifest_info.db "create table manifest_information(ID INTEGER PRIMARY KEY, EXTINFO TEXT, TIME INTEGER, LOCATION TEXT, FILENAME TEXT);"
+RUN sqlite3 ../db/manifest_info.db "create table ad_locations(ID INTEGER PRIMARY KEY, CREATIVE_ID INTEGER, LOCATION TEXT);"
 
 RUN npm run init_tsc
 
-# CMD ["node", "src/index.js"]
+# CMD ["npm", "run", "start"]

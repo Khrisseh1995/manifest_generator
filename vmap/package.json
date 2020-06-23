@@ -1,0 +1,17 @@
+{
+  "name": "vmap",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "fast-xml-parser": "^3.17.4",
+    "he": "^1.2.0"
+  }
+}

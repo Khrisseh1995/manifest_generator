@@ -30,4 +30,4 @@ RUN apt-get -y install vim
 
 RUN npm run init_tsc
 
-# CMD ["node", "transcoder.js"]
+# CMD ["npm", "run", "start"]

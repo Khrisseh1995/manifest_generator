@@ -17,7 +17,6 @@ app.get('/generate_standard_manifest', async (req, res) => {
 });
 
 app.post('/create_manifest', async (req, res) => {
-    console.log("Hai");
     const { epochTime, location, manifestInformation } = req.body;
     const {
         file_name,
