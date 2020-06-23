@@ -44,7 +44,9 @@ export default class Transcoder {
 
             myInterface.on('close', () => {
                 console.log("Manifest Array:");
+                //Extract metadata info from manifest
                 const manifestMetadata = manifestArray.splice(0, 4);
+                //TODO: Probs want to write this to the manifest
                 const noDiscontinuityArray = manifestArray.filter(manifestMetadata => manifestMetadata != "#EXT-X-DISCONTINUITY");
                 testReturnObject['manifest_declaration'] = manifestMetadata[0];
                 testReturnObject['manifest_version'] = manifestMetadata[1];

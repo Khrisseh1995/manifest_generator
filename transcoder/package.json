@@ -1,6 +1,7 @@
 {
     "dependencies": {
         "@types/aws-sdk": "^2.7.0",
+        "@types/express": "^4.17.6",
         "@types/moment": "^2.13.0",
         "@types/node": "^14.0.13",
         "aws-sdk": "^2.697.0",

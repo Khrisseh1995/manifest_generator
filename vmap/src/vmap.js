@@ -31,6 +31,8 @@ const fetchVmapFiles = async () => {
         const { data: adEndpoint } = await axios.get(vmapUrl);
 
         const vmapJsonObj = parser.parse(adEndpoint,options);
+        console.log(vmapJsonObj['VAST']['Ad']['InLine']['Creatives']['Creative'][0])
+
         const { __cdata: mediaUrl } = vmapJsonObj['VAST']['Ad']['InLine']['Creatives']['Creative'][0]['Linear']['MediaFiles']['MediaFile'][0];
         console.log("Ad URL: ",mediaUrl);
         const { data: adMedia } = await axios({

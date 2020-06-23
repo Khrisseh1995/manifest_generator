@@ -1,25 +1,38 @@
-version: '3'
-services:  
-  manifest-generator:    
+version: "3"
+services:
+  manifest-generator:
     environment:
       - AWS_ACCESS_ID=${AWS_ACCESS_ID}
       - AWS_SECRET_KEY=${AWS_SECRET_KEY}
     build: ./manifest_generator
     tty: true
     volumes:
-      - './manifest_generator/src:/usr/src/app/src'
+      - "./manifest_generator/src:/usr/src/app/src"
     ports:
-      - 7000:80      
+      - 7000:80
   transcoder:
     environment:
       - AWS_ACCESS_ID=${AWS_ACCESS_ID}
       - AWS_SECRET_KEY=${AWS_SECRET_KEY}
-    build: './transcoder'    
+    build: "./transcoder"
     tty: true
-    volumes: 
-      - './transcoder/src:/usr/src/app/src'    
-    depends_on: 
+    volumes:
+      - "./transcoder/src:/usr/src/app/src"
+    depends_on:
       - manifest-generator
     dns:
-        - 8.8.8.8
-  
+      - 8.8.8.8
+  vmap:
+    environment:
+      - AWS_ACCESS_ID=${AWS_ACCESS_ID}
+      - AWS_SECRET_KEY=${AWS_SECRET_KEY}
+    build: "./vmap"
+    tty: true
+    volumes:
+      - "./vmap/src:/usr/src/app/src"
+    depends_on:
+      - manifest-generator
+    ports:
+      - 7001:80
+    dns:
+      - 8.8.8.8

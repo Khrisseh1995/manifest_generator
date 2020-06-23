@@ -4,14 +4,23 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "ts-node src/vmap.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/aws-sdk": "^2.7.0",
+    "@types/express": "^4.17.6",
+    "@types/vast-client": "^2.1.4",
+    "aws-sdk": "^2.702.0",
     "axios": "^0.19.2",
+    "express": "^4.17.1",
     "fast-xml-parser": "^3.17.4",
-    "he": "^1.2.0"
+    "he": "^1.2.0",
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.5",
+    "vast-client": "^2.5.1"
   }
 }

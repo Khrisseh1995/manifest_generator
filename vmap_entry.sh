@@ -1,0 +1,1 @@
+docker exec -it radio_streamer_vmap_1 bash
