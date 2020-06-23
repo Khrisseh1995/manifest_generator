@@ -1,5 +1,6 @@
 import sqlite3, { Database } from 'sqlite3';
 import ManifestInformation from './types/ManifestInformation';
+import AdInformation from './types/AdInformation';
 
 export default class DatabaseHandler {
     private static instance: DatabaseHandler;
@@ -22,12 +23,32 @@ export default class DatabaseHandler {
         return DatabaseHandler.instance;
     }
 
+    public insertIntoAdInformation(insertValues: AdInformation) {
+        
+        const insertValuesArray = Object.values(insertValues);
+        this.connection.run('INSERT INTO ad_location(CREATIVE_ID, LOCATION) VALUES(?, ?)', insertValuesArray, (err) => {
+            if (err) {
+                return console.error(err.message);
+            }
+        });
+    }
+
     public insertIntoDatabase(insertValues: Array<ManifestInformation>) {
         this.connection.run('INSERT INTO manifest_information(EXTINFO, TIME, LOCATION, FILENAME) VALUES(?, ?, ?, ?)', insertValues, (err) => {
             if (err) {
                 return console.error(err.message);
             }
         });
+    }
+
+    public checkCreativeIdExists(creativeId: string): Promise<Array<any>> {
+        return new Promise((res, rej) => {
+            const sql = `select * from ad_location where CREATIVE_ID = ${creativeId}`;
+            this.connection.all(sql, [], (err, rows) => {
+                res(rows);
+                rej(err);
+            });
+        })
     }
 
     public readValuesForManifest(): Promise<Array<ManifestInformation>> {
