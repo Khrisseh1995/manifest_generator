@@ -16,7 +16,6 @@ interface ManifestWriteValue {
 
 export default class ManifestConstructor {
     constructManifest(manifestMetadata: ManifestMetadata, timestamps: Array<ManifestInformation>) {
-        console.log("Manifest", process.env.AWS_ACCESS_ID);
 
         const manifestWriteStream = fs.createWriteStream('./src/master.m3u8');
 
@@ -35,8 +34,8 @@ export default class ManifestConstructor {
 
             const metadataArray = Array.from(Object.values(manifestMetadata));
 
-            console.log(timestamps);
-            console.log(metadataArray);
+            // console.log(timestamps);
+            // console.log(metadataArray);
 
             metadataArray.forEach((metadata, index) => {
                 manifestWriteStream.write(`${metadata}\n`);

@@ -1,6 +1,6 @@
 import Transcoder from './transcoder';
 import handler from './handler';
-const transcoder = new Transcoder("https://liveaudio.rte.ie/hls-radio/radio1/chunklist.m3u8");
+const transcoder = new Transcoder(process.env.STREAM_ENDPOINT!);
 
 transcoder.startTranscode();
 

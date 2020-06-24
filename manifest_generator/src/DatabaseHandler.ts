@@ -14,7 +14,7 @@ export default class DatabaseHandler {
             console.log('Connected to the manifest databaseHandler.');
         });
     }
-
+    
     public static getInstance(): DatabaseHandler {
         if (!DatabaseHandler.instance) {
             DatabaseHandler.instance = new DatabaseHandler();
