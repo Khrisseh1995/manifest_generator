@@ -1,0 +1,1 @@
+docker exec -it radio_streamer_client_1 sh

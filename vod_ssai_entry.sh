@@ -1,0 +1,1 @@
+docker exec -it radio_streamer_vod_ssai_1 bash
