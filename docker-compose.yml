@@ -37,3 +37,34 @@ services:
       - 7001:80
     dns:
       - 8.8.8.8
+  vod_ssai:
+    environment:
+      - AWS_ACCESS_ID=${AWS_ACCESS_ID}
+      - AWS_SECRET_KEY=${AWS_SECRET_KEY}
+      - VOD_STREAM_ENDPOINT=${VOD_STREAM_ENDPOINT}
+    build: "./vod_ssai"
+    tty: true
+    volumes:
+      - "./vod_ssai/src:/usr/src/app/src"
+    depends_on:
+      - manifest-generator
+    ports:
+      - 7003:80
+    dns:
+      - 8.8.8.8
+  client:
+    environment:      
+      - VOD_STREAM_ENDPOINT=${VOD_STREAM_ENDPOINT}
+      - S3_BUCKET=${S3_BUCKET}
+    build: "./vue-player"
+    tty: true
+    volumes:
+      - "./vue-player:/app"
+    depends_on:
+      - manifest-generator
+    ports:
+      - 7006:8080
+    # dns:
+      # - 8.8.8.8
+      
+  

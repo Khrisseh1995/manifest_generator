@@ -3,6 +3,6 @@ export default interface ManifestMetadata {
     manifestVersion: string;
     targetDuration: string;
     mediaSegment: string;
-    //For when FP4 is used
+    //If FMP4 is used (which it probs should el-oh-el)
     mp4Initialization?: string;
 }

@@ -41,7 +41,7 @@ export default class DatabaseHandler {
         });
     }
 
-    public checkCreativeIdExists(creativeId: string): Promise<Array<any>> {
+    public checkCreativeIdExists(creativeId: string): Promise<Array<AdInformation>> {
         return new Promise((res, rej) => {
             const sql = `select * from ad_location where CREATIVE_ID = ${creativeId}`;
             this.connection.all(sql, [], (err, rows) => {
@@ -53,7 +53,7 @@ export default class DatabaseHandler {
 
     public readValuesForManifest(): Promise<Array<ManifestInformation>> {
         return new Promise((res, rej) => {
-            const sql = "select * from (select * from manifest_information order by id DESC limit 10) order by id ASC";
+            const sql = "select * from (select * from manifest_information order by id DESC limit 5) order by id ASC";
 
             this.connection.all(sql, [], (err, rows) => {
                 res(rows);
