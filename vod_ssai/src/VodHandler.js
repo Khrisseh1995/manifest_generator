@@ -11,7 +11,7 @@ let baseUrlForPlaylist = '';
 let baseUrlForVideo = '';
 let baseUrlForAudio = '';
 const { v4: uuidv4 } = require('uuid');
-const {fetchValueFromManifestMetadata} = require('./util');
+const { fetchValueFromManifestMetadata } = require('./util');
 
 class VodHandler {
     constructor(url) {
@@ -108,8 +108,7 @@ class VodHandler {
             .map((playlist,index) => {
                 if (playlist.match(audioStreamRegex)) {
                     //Group ID that ties the audio to the variant stream
-                    const groupId = fetchValueFromManifestMetadata(playlist, /GROUP-ID/gm);                    
-
+                    const groupId = fetchValueFromManifestMetadata(playlist,/GROUP-ID/gm);
                     return {
                         playlist,
                         groupId
@@ -122,9 +121,9 @@ class VodHandler {
             .map((playlist,index) => {
                 if (playlist.match(variantStreamRegex)) {
                     const audioMatch = /AUDIO=/gm;
-                    const bandwidthMatch = /BANDWIDTH=/gm;                                        
-                    const groupId = fetchValueFromManifestMetadata(playlist, audioMatch);
-                    const bandwidth = fetchValueFromManifestMetadata(playlist, bandwidthMatch);                                        
+                    const bandwidthMatch = /BANDWIDTH=/gm;
+                    const groupId = fetchValueFromManifestMetadata(playlist,audioMatch);
+                    const bandwidth = fetchValueFromManifestMetadata(playlist,bandwidthMatch);
 
                     const matchingAudioId = audioStreams.find(audioStream => audioStream.groupId === groupId);
                     return {
@@ -136,7 +135,7 @@ class VodHandler {
                 }
             })
             .filter(playlist => !!playlist);
-        
+
         return {
             audioStreams,
             variantStreams,
@@ -145,8 +144,8 @@ class VodHandler {
 
     }
 
-    parseAudioStreams(audioTag) {        
-        const URIMatch = /URI=/gm;        
+    parseAudioStreams(audioTag) {
+        const URIMatch = /URI=/gm;
         const audioStream = audioTag.split(',')
             .filter(audioTag => audioTag.match(URIMatch))[0]
             .split('=')[1];
@@ -162,12 +161,37 @@ class VodHandler {
         const { data: audioStreamData } = await axios.get(audioManifestUrl);
 
         this.streamToArray(audioStreamData,fileName,"audio");
-        this.streamToArray(videoStreamData,fileName,"video");        
+        this.streamToArray(videoStreamData,fileName,"video");
     }
 
+    //Make endpoints dynamic
+    replacePlaylistsWithExpressEndpoints(manifest,baseUrl) {
+        const videoStreamRegex = /#EXT-X-STREAM-INF/gm;
+        const audioStreamRegex = /#EXT-X-MEDIA:TYPE=AUDIO/gm;
 
+        manifest.forEach((line,index) => {
+            if (line.match(videoStreamRegex)) {
+                const subPlaylist = manifest[index + 1];
+                manifest[index + 1] = `http://localhost:7003/generate_dynamic_playlist?subPlaylistUrl=https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/${subPlaylist}`;
+            }
+            if (line.match(audioStreamRegex)) {
+                const originalUriValue = line
+                    .split(',')
+                    .filter(stream => stream.includes("URI="))[0]
+                    .split('=')[1].replace(/"/gm, "")             ;
 
-    async streamToArray(streamData,fileName,format) {
+                var re = new RegExp(originalUriValue,"g");                
+                const replacedPlaylist = line.replace(re,`http://localhost:7003/generate_dynamic_playlist?subPlaylistUrl=https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/${originalUriValue}`);
+                manifest[index] = replacedPlaylist;
+            }
+
+        })
+
+        return manifest;
+
+    }
+
+    static streamToArray(streamData,format,baseUrl) {
         const audioMediaRegex = /.ts/gm
         const replacedManifestStream = streamData.split('\n')
             .map(stream => {
@@ -177,39 +201,38 @@ class VodHandler {
                     return `#EXT-X-TARGETDURATION:${duration}`
                 }
                 if (stream.match(audioMediaRegex)) {
-
                     const audioUrl = stream.split('/').slice(1).join('/');
                     const match = /\..\//gm
                     const fileBackCount = stream.match(match);
-                    let baseUrlForPlaylistArray = baseUrlForPlaylist.split('/');
+                    let baseUrlForPlaylistArray = baseUrl.split('/');
                     for (let i = 0; i < fileBackCount.length; i++) {
                         baseUrlForPlaylistArray.pop();
                     }
 
-                    return `${baseUrlForPlaylistArray.join('/')}/${audioUrl}`;                    
+                    return `${baseUrlForPlaylistArray.join('/')}/${audioUrl}`;
                 }
                 return stream;
             });
 
         const firstStreamInstance = replacedManifestStream.findIndex(stream => stream.includes("#EXTINF"));
-        replacedManifestStream.splice(firstStreamInstance,0,"#EXT-X-DISCONTINUITY");
-        replacedManifestStream.splice(firstStreamInstance,0,`https://hboremixbucket.s3.amazonaws.com/ads/ad_${format}.ts`);
-        replacedManifestStream.splice(firstStreamInstance,0,"#EXTINF:10.0");
+        // replacedManifestStream.splice(firstStreamInstance,0,"#EXT-X-DISCONTINUITY");
+        // replacedManifestStream.splice(firstStreamInstance,0,`https://hboremixbucket.s3.amazonaws.com/ads/ad_${format}.ts`);
+        // replacedManifestStream.splice(firstStreamInstance,0,"#EXTINF:10.0");
+        return replacedManifestStream.join("\n");
+        // const audioWriteStream = fs.createWriteStream(`../streams/${fileName}_${format}.m3u8`);
 
-        const audioWriteStream = fs.createWriteStream(`../streams/${fileName}_${format}.m3u8`);
 
+        // replacedManifestStream.forEach(stream => audioWriteStream.write(`${stream}\n`));
 
-        replacedManifestStream.forEach(stream => audioWriteStream.write(`${stream}\n`));
+        // audioWriteStream.on('close',async () => {
 
-        audioWriteStream.on('close',async () => {
-            
-        })
-        const parameters = {
-            Bucket: 'hboremixbucket',
-            Key: `manifests/${this.fileUuid}/${fileName}_${format}.m3u8`,
-            Body: fs.createReadStream(`../streams/${fileName}_${format}.m3u8`)
-        }
-        await s3.upload(parameters).promise();
+        // })
+        // const parameters = {
+        //     Bucket: 'hboremixbucket',
+        //     Key: `manifests/${this.fileUuid}/${fileName}_${format}.m3u8`,
+        //     Body: fs.createReadStream(`../streams/${fileName}_${format}.m3u8`)
+        // }
+        // await s3.upload(parameters).promise();
     }
 
     async run() {

@@ -5,7 +5,6 @@
 # AUDIO groups
 #EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="audio-aach-64",NAME="English",LANGUAGE="en",AUTOSELECT=YES,DEFAULT=YES,CHANNELS="2",URI="http://localhost:7003/low_bandwidth_endpoint_audio"
 
-
 # variants
 #EXT-X-STREAM-INF:BANDWIDTH=311000,AVERAGE-BANDWIDTH=283000,CODECS="mp4a.40.5,avc1.64000D",RESOLUTION=454x234,FRAME-RATE=25,AUDIO="audio-aach-64"
 http://localhost:7003/low_bandwidth_endpoint_video
