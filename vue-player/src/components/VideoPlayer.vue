@@ -2,7 +2,11 @@
   <div class="hello">
     <h1>VOD SSAI Demo</h1>
     <!-- <video @timeupdate="getTimeUpdate($event)" @loadedmetadata="changeAdSource" ref="videoPlayer" class="video-js"></video> -->
-    <video @timeupdate="getTimeUpdate($event)" ref="videoPlayer" class="video-js"></video>
+    <video      
+      @timeupdate="getTimeUpdate($event)"
+      ref="videoPlayer"
+      class="video-js"
+    ></video>
     <button @click="testClick">Play Me!</button>
   </div>
 </template>
@@ -26,7 +30,9 @@ export default {
         sources: [
           {
             // src: "http://localhost:7003/manifest_from_s3",
-            src: `http://localhost:7003/send_fake_local_manifest`,
+            // src: `http://localhost:7003/send_fake_local_manifest`,
+            src:
+              "http://localhost:7003/generate_master_playlist?masterPlaylist=https%3A%2F%2Fbitdash-a.akamaihd.net%2Fcontent%2FMI201109210084_1%2Fm3u8s%2Ff08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8&baseUrl=https%3A%2F%2Fbitdash-a.akamaihd.net%2Fcontent%2FMI201109210084_1%2Fm3u8s",
             // src: "https://hboremixbucket.s3.amazonaws.com/manifests/c751ad89-6951-43ab-8c26-d7df751dcece/generated_master_playlist.m3u8",
             type: "application/x-mpegURL"
           }
@@ -41,35 +47,35 @@ export default {
   },
   methods: {
     getTimeUpdate() {
-      const playerTime = this.player.currentTime();       
-      if(playerTime >= 10) {
+      const playerTime = this.player.currentTime();
+      console.log(playerTime);
+      if (playerTime >= 10) {
         this.player.duration = () => this.duration - 10;
       }
-      
     },
     testClick(event) {
-     
       console.log(event);
       console.log(this.player.duration());
     },
     changeAdSource() {
       if (!this.changed) {
         this.changed = true;
-        this.player.src({
-          type: "application/x-mpegURL",
-          // src: `http://localhost:7000/generate_standard_manifest?adShown=${this.showAd}`
-          src: "http://localhost:7003/manifest"
-        });
-        // this.options.sources[0].src = `http://localhost:7000/generate_standard_manifest?showAd=${this.showAdComp}`;
-        console.log("Media Started");
-      }
-      if (!this.duration) {
-        this.duration = this.player.duration();
-      }
+        //   this.player.src({
+        //     type: "application/x-mpegURL",
+        //     // src: `http://localhost:7000/generate_standard_manifest?adShown=${this.showAd}`
+        //     src: "http://localhost:7003/manifest"
+        //   });
+        //   // this.options.sources[0].src = `http://localhost:7000/generate_standard_manifest?showAd=${this.showAdComp}`;
+        //   console.log("Media Started");
+        // }        
+        if (!this.duration) {
+          this.duration = this.player.duration();
+        }
 
-      this.player.duration = () => {
-        return 10;
-      };
+        this.player.duration = () => {
+          return 10;
+        };
+      }
     }
   },
   mounted() {

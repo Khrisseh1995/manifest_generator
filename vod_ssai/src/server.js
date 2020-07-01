@@ -16,17 +16,21 @@ app.get("/generate_master_playlist",async (req,res) => {
     console.log(masterPlaylist)
     const vodHandler = new VodHandler(masterPlaylist);
     const data = await vodHandler.getMasterPlaylist();
-    const replacedMasterPlaylist = vodHandler.replacePlaylistsWithExpressEndpoints(data);
+    const replacedMasterPlaylist = vodHandler.replacePlaylistsWithExpressEndpoints(data,baseUrl);
     const replacedMasterFile = replacedMasterPlaylist.join("\n");
     res.setHeader('Content-type','application/x-mpegURL');
-    res.send(replacedMasterFile);    
+    res.send(replacedMasterFile);
+    // replacedMasterPlaylist.forEach(playlist => console.log(playlist));    
+    // res.send(req.query);
 });
 
 app.get('/generate_dynamic_playlist',async (req,res) => {
-    const { subPlaylistUrl, format } = req.query;
+    const { subPlaylistUrl,format } = req.query;
+    console.log(subPlaylistUrl);
     const { data: playlist } = await axios.get(subPlaylistUrl);
-    console.log(format);    
-    const vodHandler = VodHandler.streamToArray(playlist, format,"https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s");    
+    console.log(playlist);
+    console.log(format);
+    const vodHandler = VodHandler.streamToArray(playlist,format,"https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s");
     res.setHeader('Content-type','application/x-mpegURL');
     return res.send(vodHandler);
 });

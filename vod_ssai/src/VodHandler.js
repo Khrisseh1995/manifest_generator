@@ -18,9 +18,7 @@ class VodHandler {
 
             const lineArray = [];
             masterPlaylist.on('line',line => lineArray.push(line));
-            masterPlaylist.on('close',() => {
-                res(lineArray)
-            });
+            masterPlaylist.on('close',() => res(lineArray));
         });
     }
 
@@ -29,19 +27,19 @@ class VodHandler {
     }
 
     //Make endpoints dynamic
-    replacePlaylistsWithExpressEndpoints(manifest,baseUrl) {
+    replacePlaylistsWithExpressEndpoints(manifest, baseUrl) {
         const videoStreamRegex = /#EXT-X-STREAM-INF/gm;
         const audioStreamRegex = /#EXT-X-MEDIA:TYPE=AUDIO/gm;
 
         manifest.forEach((line,index) => {
             if (line.match(videoStreamRegex)) {
                 const subPlaylist = manifest[index + 1];
-                manifest[index + 1] = `http://localhost:7003/generate_dynamic_playlist?subPlaylistUrl=https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/${subPlaylist}&format=video`;
+                manifest[index + 1] = `http://localhost:7003/generate_dynamic_playlist?subPlaylistUrl=${baseUrl}/${subPlaylist}&format=video`;
             }
             if (line.match(audioStreamRegex)) {
-                const originalUriValue = fetchValueFromManifestMetadata(line, "URI=");
+                const originalUriValue = fetchValueFromManifestMetadata(line,"URI=");
                 var re = new RegExp(originalUriValue,"g");
-                const replacedPlaylist = line.replace(re,`http://localhost:7003/generate_dynamic_playlist?subPlaylistUrl=https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/${originalUriValue}&format=audio`);
+                const replacedPlaylist = line.replace(re,`http://localhost:7003/generate_dynamic_playlist?subPlaylistUrl=${baseUrl}/${originalUriValue}&format=audio`);
                 manifest[index] = replacedPlaylist;
             }
 
@@ -61,14 +59,17 @@ class VodHandler {
                     return `#EXT-X-TARGETDURATION:${duration}`
                 }
                 if (stream.match(audioMediaRegex)) {
-                    
                     //Probs needs to match fileBackCount
-                    const audioUrl = stream.split('/').slice(1).join('/');
+                    
                     //File directories may look like ../../file so need to parse this and pop the corresponding amount off the base
                     const match = /\..\//gm
-                    const fileBackCount = stream.match(match);
+                    const fileBackCount = Array.isArray(stream.match(match)) ? stream.match.length : 0
+                    // console.log(fileBackCount.length);
+                    // if(!!fileBackCount.length) {
+                        const audioUrl = stream.split('/').slice(fileBackCount).join('/');
+                    // }
                     let baseUrlForPlaylistArray = baseUrl.split('/');
-                    for (let i = 0; i < fileBackCount.length; i++) {
+                    for (let i = 0; i < fileBackCount; i++) {
                         baseUrlForPlaylistArray.pop();
                     }
 
@@ -77,17 +78,13 @@ class VodHandler {
                 return stream;
             });
 
-
-        // if (!adShown) {            
-            console.log("Show Ad");        
-            // //First instance of media files so ad is inserted at the start
-            const firstStreamInstance = replacedManifestStream.findIndex(stream => stream.includes("#EXTINF"));
-            console.log(firstStreamInstance);
-            replacedManifestStream.splice(firstStreamInstance,0,"#EXT-X-DISCONTINUITY");
-            replacedManifestStream.splice(firstStreamInstance,0,`https://hboremixbucket.s3.amazonaws.com/ads/ad_${format}.ts`);
-            //Ad duration needs to be dynamic
-            replacedManifestStream.splice(firstStreamInstance,0,"#EXTINF:10.0");
-        // }
+        // //First instance of media files so ad is inserted at the start
+        const firstStreamInstance = replacedManifestStream.findIndex(stream => stream.includes("#EXTINF"));
+        console.log(firstStreamInstance);
+        replacedManifestStream.splice(firstStreamInstance,0,"#EXT-X-DISCONTINUITY");
+        replacedManifestStream.splice(firstStreamInstance,0,`https://hboremixbucket.s3.amazonaws.com/ads/ad_${format}.ts`);
+        //Ad duration needs to be dynamic
+        replacedManifestStream.splice(firstStreamInstance,0,"#EXTINF:10.0");
 
         return replacedManifestStream.join("\n");
     }
