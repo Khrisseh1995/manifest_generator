@@ -15,8 +15,7 @@ const { fetchValueFromManifestMetadata } = require('./util');
 
 class VodHandler {
     constructor(url) {
-        this.url = url;
-        this.fileUuid = uuidv4();
+        this.url = url;        
     }
 
     getMasterPlaylist() {
@@ -39,18 +38,6 @@ class VodHandler {
         const urlArray = this.url.split('/');
         urlArray.pop();
         baseUrlForPlaylist = urlArray.join('/');
-    }
-
-    async callManifestStreams(audioManifest,videoManifest,fileName) {
-        const videoManifestUrl = `${baseUrlForPlaylist}/${videoManifest}`;
-        let audioManifestUrl = `${baseUrlForPlaylist}/${audioManifest}`
-        audioManifestUrl = audioManifestUrl.replace(/"/gm,"");
-
-        const { data: videoStreamData } = await axios.get(videoManifestUrl);
-        const { data: audioStreamData } = await axios.get(audioManifestUrl);
-
-        this.streamToArray(audioStreamData,fileName,"audio");
-        this.streamToArray(videoStreamData,fileName,"video");
     }
 
     //Make endpoints dynamic
@@ -80,7 +67,7 @@ class VodHandler {
 
     }
 
-    static streamToArray(streamData,format,baseUrl) {
+    static streamToArray(streamData,format, baseUrl, showAd) {
         const audioMediaRegex = /.ts/gm
         const replacedManifestStream = streamData.split('\n')
             .map(stream => {
@@ -108,17 +95,6 @@ class VodHandler {
         // replacedManifestStream.splice(firstStreamInstance,0,`https://hboremixbucket.s3.amazonaws.com/ads/ad_${format}.ts`);
         // replacedManifestStream.splice(firstStreamInstance,0,"#EXTINF:10.0");
         return replacedManifestStream.join("\n");
-    }
-
-    async run() {
-        this.getBaseUrl();
-        const subPlaylists = await this.getSubPlaylists();
-        const { variantStreams,metadata,audioStreams } = subPlaylists;
-        this.constructMasterPlaylist(subPlaylists)
-        variantStreams.forEach(stream => {
-            const { streamManifest,audioPath,bandwidth } = stream;
-            this.callManifestStreams(audioPath,streamManifest,bandwidth);
-        })
     }
 }
 
