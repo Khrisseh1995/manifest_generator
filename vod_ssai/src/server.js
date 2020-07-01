@@ -11,49 +11,24 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-app.get("/manifest",(req,res) => {
-    res.setHeader('Content-type','application/x-mpegURL');
-    res.sendFile(__dirname + '/master_playlist_to_serve.m3u8')
-})
-
-app.get('/return_live_manifest',(req,res) => {
-    res.setHeader('Content-type','application/x-mpegURL');
-    res.sendFile(__dirname + '/live_playlist.m3u8');
-});
-
-app.post('/insert_vod_preroll', (req,res) => {
-    const { streamUrl } = req.body;
-    const vodHandler = new VodHander(streamUrl)
-    vodHandler.run();
-    res.setHeader('Content-type','application/x-mpegURL');
-    res.sendFile(__dirname + '/master_playlist_to_serve.m3u8')
-});
-
-app.get("/manifest_from_s3",(req,res) => {
-    res.sendFile("https://hboremixbucket.s3.amazonaws.com/live_manifests/fake_live_master.m3u8");
-});
-
-app.get("/generate_master_playlist", async (req, res) => {
-    const {baseUrl, masterPlaylist} = req.query;
+app.get("/generate_master_playlist",async (req,res) => {
+    const { baseUrl,masterPlaylist } = req.query;
     console.log(masterPlaylist)
-    const vodHandler = new VodHandler(masterPlaylist);    
+    const vodHandler = new VodHandler(masterPlaylist);
     const data = await vodHandler.getMasterPlaylist();
-    const replacedMasterPlaylist =vodHandler.replacePlaylistsWithExpressEndpoints(data);
+    const replacedMasterPlaylist = vodHandler.replacePlaylistsWithExpressEndpoints(data);
     const replacedMasterFile = replacedMasterPlaylist.join("\n");
     res.setHeader('Content-type','application/x-mpegURL');
-    res.send(replacedMasterFile);
-    // replacedMasterPlaylist.forEach(playlist => console.log(playlist));    
-    // res.send(req.query);
+    res.send(replacedMasterFile);    
 });
 
-app.get('/generate_dynamic_playlist', async (req, res) => {
-    const {subPlaylistUrl} = req.query;
-    const {data: playlist} = await axios.get(subPlaylistUrl);
-    const vodHandler = VodHandler.streamToArray(playlist, "video", "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s");    
-    console.log(vodHandler);
-    // console.log(playlist)
+app.get('/generate_dynamic_playlist',async (req,res) => {
+    const { subPlaylistUrl, format } = req.query;
+    const { data: playlist } = await axios.get(subPlaylistUrl);
+    console.log(format);    
+    const vodHandler = VodHandler.streamToArray(playlist, format,"https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s");    
     res.setHeader('Content-type','application/x-mpegURL');
-    return res.send(vodHandler);    
+    return res.send(vodHandler);
 });
 
 app.get("/low_bandwidth_endpoint_audio",async (req,res) => {
@@ -78,7 +53,7 @@ app.get("/low_bandwidth_endpoint_audio",async (req,res) => {
             "#EXT-X-DISCONTINUINTY"
         ]
 
-        audioManifestArray.splice(10, 0, ...adArray);
+        audioManifestArray.splice(10,0,...adArray);
 
         console.log(audioManifestArray);
         console.log('Audio cookie created successfully');
@@ -88,7 +63,7 @@ app.get("/low_bandwidth_endpoint_audio",async (req,res) => {
     }
     const audioManifest = audioManifestArray.map((manifest,index) => {
         const audioManifestRegex = /.aac/gm;
-        if(manifest.includes("hboremixbucket")) {
+        if (manifest.includes("hboremixbucket")) {
             return manifest;
         }
         if (manifest.includes("aac")) {
@@ -123,7 +98,7 @@ app.get("/low_bandwidth_endpoint_video",async (req,res) => {
             "https://hboremixbucket.s3.amazonaws.com/ads/ad_video.ts",
             "#EXT-X-DISCONTINUINTY"
         ]
-        videoManifestArray.splice(10 ,0, ...adArray);        
+        videoManifestArray.splice(10,0,...adArray);
 
         console.log(videoManifestArray);
         console.log('Video cookie created successfully');
@@ -134,7 +109,7 @@ app.get("/low_bandwidth_endpoint_video",async (req,res) => {
     const videoManifest = videoManifestArray.map((manifest,index) => {
 
         const videoManfiestRegex = /.ts/gm;
-        if(manifest.includes("hboremixbucket")) {
+        if (manifest.includes("hboremixbucket")) {
             return manifest;
         }
         if (manifest.includes("ts")) {
@@ -153,4 +128,4 @@ app.get('/send_fake_local_manifest',(req,res) => {
 });
 
 
-app.listen(80, () => console.log("Listneing on port 7005"));
+app.listen(80,() => console.log("Listneing on port 7005"));

@@ -1,21 +1,11 @@
-/**
- * Process is returning too early, not all manifett files are being written fully.
- */
-
 const axios = require('axios');
 const fs = require('fs');
 const readline = require('readline');
-const regex = /m3u8/gm
-const { s3 } = require('./aws');
-let baseUrlForPlaylist = '';
-let baseUrlForVideo = '';
-let baseUrlForAudio = '';
-const { v4: uuidv4 } = require('uuid');
 const { fetchValueFromManifestMetadata } = require('./util');
 
 class VodHandler {
     constructor(url) {
-        this.url = url;        
+        this.url = url;
     }
 
     getMasterPlaylist() {
@@ -35,9 +25,7 @@ class VodHandler {
     }
 
     getBaseUrl() {
-        const urlArray = this.url.split('/');
-        urlArray.pop();
-        baseUrlForPlaylist = urlArray.join('/');
+        return this.url.split('/').pop().join();
     }
 
     //Make endpoints dynamic
@@ -48,16 +36,12 @@ class VodHandler {
         manifest.forEach((line,index) => {
             if (line.match(videoStreamRegex)) {
                 const subPlaylist = manifest[index + 1];
-                manifest[index + 1] = `http://localhost:7003/generate_dynamic_playlist?subPlaylistUrl=https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/${subPlaylist}`;
+                manifest[index + 1] = `http://localhost:7003/generate_dynamic_playlist?subPlaylistUrl=https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/${subPlaylist}&format=video`;
             }
             if (line.match(audioStreamRegex)) {
-                const originalUriValue = line
-                    .split(',')
-                    .filter(stream => stream.includes("URI="))[0]
-                    .split('=')[1].replace(/"/gm, "")             ;
-
-                var re = new RegExp(originalUriValue,"g");                
-                const replacedPlaylist = line.replace(re,`http://localhost:7003/generate_dynamic_playlist?subPlaylistUrl=https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/${originalUriValue}`);
+                const originalUriValue = fetchValueFromManifestMetadata(line, "URI=");
+                var re = new RegExp(originalUriValue,"g");
+                const replacedPlaylist = line.replace(re,`http://localhost:7003/generate_dynamic_playlist?subPlaylistUrl=https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/${originalUriValue}&format=audio`);
                 manifest[index] = replacedPlaylist;
             }
 
@@ -67,7 +51,7 @@ class VodHandler {
 
     }
 
-    static streamToArray(streamData,format, baseUrl, showAd) {
+    static streamToArray(streamData,format,baseUrl) {
         const audioMediaRegex = /.ts/gm
         const replacedManifestStream = streamData.split('\n')
             .map(stream => {
@@ -77,7 +61,10 @@ class VodHandler {
                     return `#EXT-X-TARGETDURATION:${duration}`
                 }
                 if (stream.match(audioMediaRegex)) {
+                    
+                    //Probs needs to match fileBackCount
                     const audioUrl = stream.split('/').slice(1).join('/');
+                    //File directories may look like ../../file so need to parse this and pop the corresponding amount off the base
                     const match = /\..\//gm
                     const fileBackCount = stream.match(match);
                     let baseUrlForPlaylistArray = baseUrl.split('/');
@@ -90,10 +77,18 @@ class VodHandler {
                 return stream;
             });
 
-        const firstStreamInstance = replacedManifestStream.findIndex(stream => stream.includes("#EXTINF"));
-        // replacedManifestStream.splice(firstStreamInstance,0,"#EXT-X-DISCONTINUITY");
-        // replacedManifestStream.splice(firstStreamInstance,0,`https://hboremixbucket.s3.amazonaws.com/ads/ad_${format}.ts`);
-        // replacedManifestStream.splice(firstStreamInstance,0,"#EXTINF:10.0");
+
+        // if (!adShown) {            
+            console.log("Show Ad");        
+            // //First instance of media files so ad is inserted at the start
+            const firstStreamInstance = replacedManifestStream.findIndex(stream => stream.includes("#EXTINF"));
+            console.log(firstStreamInstance);
+            replacedManifestStream.splice(firstStreamInstance,0,"#EXT-X-DISCONTINUITY");
+            replacedManifestStream.splice(firstStreamInstance,0,`https://hboremixbucket.s3.amazonaws.com/ads/ad_${format}.ts`);
+            //Ad duration needs to be dynamic
+            replacedManifestStream.splice(firstStreamInstance,0,"#EXTINF:10.0");
+        // }
+
         return replacedManifestStream.join("\n");
     }
 }
